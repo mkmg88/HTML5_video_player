@@ -1,0 +1,125 @@
+body { font: 14px/1.4286 "microsoft yahei", sans-serif; color: #333; background: #f0f0f0; }
+body, dl, dd, h1, h2, h3, h4, h5, h6, p, form { margin: 0; }
+ol, ul { margin: 0; padding: 0; list-style: none; }
+li { list-style: none; }
+button, input, select, textarea { font-family: "microsoft yahei", sans-serif; font-size: 14px; }
+article, aside, details, figcaption, figure, footer, header, menu, nav, section { display: block; }
+a { border: none; text-decoration: none; }
+img { border: none; }
+
+.f_video {
+    background: #333;
+    width: 700px;
+    height: 400px;
+    position: relative;
+    margin: 20px auto;
+    overflow: hidden;
+
+    .m_controls {
+        position: absolute;
+        bottom: 0;
+        height: 19px;
+        padding: 15px 0;
+        width: 100%;
+        background-image:linear-gradient(to top,rgba(0,0,0,0.6) ,rgba(0,0,0,0) 80%); 
+        transition: all 0.4s ease-in;
+    }
+    .m_controls.hide {
+        transform: translate(0, 100%);
+    }
+
+    .m_play {
+        float: left;
+        padding: 0 0 0 22px;
+        width: 19px;
+        height: 19px;
+        a {
+            display: block;
+            width: 19px;
+            height: 19px;
+        }
+        .m_pl {
+            background: url(../images/play.png);
+        }
+        .m_pr {
+            background: url(../images/pruse.png);
+        }
+    }
+
+
+    .m_press {
+        float: left;
+        width: 430px;
+        padding: 0 20px;
+        color: #fff;
+        line-height: 19px;
+        span {
+            float: left;
+        }
+        .m_bar {
+            width: 330px;
+        }
+    }
+
+    .m_bar {
+        float: left;
+        margin: 5px 10px;
+        height: 9px;
+        background: rgba(0,0,0,0.5);
+        border-radius: 2px;
+        position: relative;
+    }
+    .m_load,.m_plan {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 9px;
+    }
+    .m_load {
+        background: #94908e;
+    }
+    .m_plan {
+        background: #fb6362;
+    }
+
+    .m_plan_ctr {
+        position: absolute;
+        height: 16px;
+        width: 5px;
+        background: #fff;
+        margin-top: -4px;
+        right: 0;
+    }
+
+    .m_sound {
+        float: left;
+        height: 19px;
+        width: 145px;
+        .m_bar {
+            width: 95px;
+        }
+    }
+    .m_sound_c {
+        float: left;
+        width: 21px;
+        height: 19px;
+    }
+    .m_sound_on {
+        background: url(../images/sound_on.png);
+    }
+    .m_sound_off {
+        background: url(../images/sound_off.png);
+    }
+    .m_full {
+        width: 19px;
+        height: 19px;
+        float: left;
+        a {
+            display: block;
+            width: 19px;
+            height: 19px;
+            background: url(../images/full.png) no-repeat 1px;
+        }
+    }
+}
+

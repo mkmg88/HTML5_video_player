@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>播放器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0,minimal-ui">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- 视频 -->
+    <div class="f_video">
+        <video src="media/j.mp4" poster="media/j.jpg" width="700" height="400" id="j-video">
+            <P>请升级浏览器..</p>
+        </video>
+        
+<ul class="m_controls">
+    <!-- 开始暂停按钮 -->
+    <li class="m_play">
+        <a href="javascript:;" id="j-play" class="m_pl"></a>
+    </li>
+   
+    <li class="m_press">
+        <!-- 进度时间 -->
+        <span id="j-currenttime">00:00</span>
+         <!-- 进度条 -->
+        <div class="m_bar">
+            <div class="m_load"></div>
+            <div class="m_plan" id="j-press">
+                <div class="m_plan_ctr j-planbtn"></div>
+            </div>
+        </div>
+        <!-- 视频长度 -->
+        <span id="j-alltime">00:00</span>
+    </li>
+
+    <!-- 声音控制 -->
+    <li class="m_sound">
+        <a href="javascript:;" id="j-muted" class="m_sound_c m_sound_on"></a>
+        <div class="m_bar">
+            <div class="m_plan" id="j-sound" style="width: 100%;">
+                <div class="m_plan_ctr" id="j-soundbtn"></div>
+            </div>
+        </div>
+    </li>
+
+    <!-- 全屏按钮 -->
+    <li class="m_full">
+        <a href="javascript:;" id="j-full"></a>
+    </li>
+</ul>
+
+
+    </div>
+    
+    <script src="js/jquery-1.9.1.js"></script>
+    <script>
+    var Player = function(){
+        var obj = this;
+        var dom = {
+            $video: $('#j-video'),
+            $play: $('#j-play'),
+            $muted: $('#j-muted'),
+            $full: $('#j-full'),
+            $allTime: $('#j-alltime'),
+            $currentTime: $('#j-currenttime'),
+            $press: $('#j-press'),
+            $pressBtn : $('#j-press .j-planbtn'),
+            $sound: $('#j-sound'),
+            $soundBtn: $('#j-soundbtn')
+        };
+        var video = dom.$video[0];  //获得video对象
+
+        var config = {
+            timeInterval: null,
+            isReay: false,
+            duration: 0,   //全部时间
+            currentTime: 0,   //当前时间
+            gWidth: dom.$press.parent().width(),
+            gLeft: dom.$press.parent().offset().left,
+            sWidth: dom.$sound.width(),
+            sLeft: dom.$sound.offset().left,
+            volume: 1
+        }
+
+        this.init = function(){
+            this.bindEvent();
+        };
+
+        this.bindEvent = function(){
+            //点击播放按钮
+            dom.$play.on('click', function() {
+                if(video.paused){
+                    video.play();
+                }else{
+                    video.pause();
+                }
+            });
+
+            //视频播放为改变事件
+            dom.$video.on('timeupdate',function(){
+                obj.getCurrentTime(video.currentTime,1);
+            });
+
+            //点击静音按钮
+            dom.$muted.on('click',function(){
+                obj.muted();
+            });
+
+            //点击全屏按钮
+            dom.$full.on('click',function(){
+                obj.fullScreen();
+            });
+            
+            //视频播放事件
+            dom.$video.on('play',function(){
+                dom.$play.addClass('m_pr').removeClass('m_pl');  
+            });
+
+            //视频暂停事件
+            dom.$video.on('pause',function(){
+                dom.$play.addClass('m_pl').removeClass('m_pr');
+                if(video.ended){
+                     obj.getCurrentTime(0,0);
+                }
+            });
+
+            //视频时长改变
+            dom.$video.on('durationchange',function(){
+                config.duration = video.duration;
+                dom.$allTime.html(obj.parTime(config.duration));
+            });
+
+            //点击进度条
+            dom.$press.parent().on('click',function(e){
+                var x = e.clientX - config.gLeft;
+                var radio = x / config.gWidth;
+                var currentTime = video.duration * radio;
+                video.currentTime = currentTime;
+                obj.getCurrentTime(currentTime);
+            });
+
+            //进度条拖拽
+            this.drag();
+
+            //点击声音
+            dom.$sound.parent().on('click',function(e){
+                var x = e.clientX - config.sLeft;
+                var radio = x / config.sWidth;
+                
+                obj.getSound(radio);
+            });
+
+            //声音拖拽
+            this.soundDrag();
+        };
+
+        //音量控制
+        this.getSound = function(volume,transition){
+            //设置音量
+            volume = volume.toFixed(2);
+            video.volume = volume;
+
+            //设置音量条长度
+            var ratio = volume * 100;
+            dom.$sound.css('width', ratio + '%');
+
+            if(volume == 0){
+                dom.$muted.addClass('m_sound_off').removeClass('m_sound_on');
+            }else{
+                dom.$muted.addClass('m_sound_on').removeClass('m_sound_off');
+            }
+        };
+
+        //静音
+        this.muted = function(){
+            if (video.muted) {
+                //如果是静音的状态
+                video.muted = false;
+                dom.$muted.addClass('m_sound_on').removeClass('m_sound_off');
+                dom.$sound.css('width', config.volume * 100 + '%');
+                
+            } else {
+                //如果是播放的状态
+                config.volume = video.volume;
+                video.muted = true;
+                dom.$muted.addClass('m_sound_off').removeClass('m_sound_on');
+                dom.$sound.css('width', '0%');
+            }
+        };
+
+        //声音条拖动
+        this.soundDrag = function(){
+            //拖动声音条开始
+            dom.$soundBtn.on('mousedown',function(e){
+                var _self = this;
+                var x = e.clientX;
+                var w = parseInt(dom.$sound.css('width'));
+                var volume = video.volume;
+                $(document).on('mousemove',function(e){
+                    var addLeft = e.clientX - x;
+                    var width = w + addLeft;
+                    if(w + addLeft >= config.sWidth){
+                        width = config.sWidth;
+                    }
+                    if(w + addLeft <= 0){
+                        width = 0;
+                    }
+                    var radio = width / config.sWidth;
+                    obj.getSound(radio);
+                });
+                $(document).on('mouseup',function(){
+                    $(this).off('mousemove').off('mouseup');
+                });
+                return false;
+            });
+        };
+
+        //全屏
+        this.fullScreen = function(){
+            console.log(document.webkitIsFullScreen);
+            if (!document.webkitIsFullScreen) {
+                video.webkitRequestFullScreen(); 
+            } else {
+                document.webkitCancelFullScreen();
+            }
+        };
+
+        //播放进度
+        this.getCurrentTime = function(currentTime,transition){
+            //设置显示时间
+            dom.$currentTime.html(obj.parTime(Math.ceil(currentTime)));
+
+            //设置进度条长度
+            var ratio =  (currentTime /  Math.ceil(video.duration) * 100).toFixed(2);
+            dom.$press.css('width', ratio + '%');
+        }
+
+        //进度条拖动
+        this.drag = function(){
+            //拖动进度条开始
+            dom.$pressBtn.on('mousedown',function(e){
+                var _self = this;
+                var x = e.clientX;
+                var w = parseInt(dom.$press.css('width'));
+                var currentTime = video.currentTime;
+                video.pause();
+                $(document).on('mousemove.drag',function(e){
+                    var addLeft = e.clientX - x;
+                    var width = w + addLeft;
+                    if(w + addLeft >= config.gWidth){
+                        width = config.gWidth;
+                    }
+                    if(w + addLeft <= 0){
+                        width = 0;
+                    }
+                    var radio = width / config.gWidth;
+                    currentTime = video.duration * radio;
+                    obj.getCurrentTime(currentTime,0);
+                });
+                $(document).on('mouseup',function(){
+                    $(this).off('mousemove').off('mouseup');
+                    video.currentTime = currentTime;
+                    video.play();
+                });
+                return false;
+            });
+        };
+
+        this.parTime = function(seconds){
+            seconds = Math.ceil(seconds);
+            var sec = seconds % 60;
+            
+            var min = (seconds - sec)/60;
+            var hours = '';
+            if(min >= 60){
+                hours = (min - min % 60 )/60;
+                min = min % 60;
+            }
+            return (hours ? hours + ':' : '') + (min < 10 ? '0' + min : min) + ':' + (sec < 10 ? '0' + sec : sec);
+        }
+    }
+
+    
+    $(function(){
+        (new Player()).init();
+    });
+    </script>
+</body>
+</html>
